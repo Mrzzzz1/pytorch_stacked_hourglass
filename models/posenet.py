@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from models.layers import Conv, Hourglass, Pool, Residual
 from task.loss import HeatmapLoss
+from torchvision.models import resnet50
 
 class UnFlatten(nn.Module):
     def forward(self, input):
