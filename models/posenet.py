@@ -20,13 +20,32 @@ class PoseNet(nn.Module):
         super(PoseNet, self).__init__()
         
         self.nstack = nstack
-        self.pre = nn.Sequential(
-            Conv(3, 64, 7, 2, bn=True, relu=True),
-            Residual(64, 128),
-            Pool(2, 2),
-            Residual(128, 128),
-            Residual(128, inp_dim)
+
+        resnet = resnet50(pretrained=True)
+        for param in resnet.parameters():
+            param.requires_grad = False
+        self.resnet_features = nn.Sequential(*list(resnet.children())[:-2])
+        # 上采样模块：将分辨率从 1/32 恢复到 1/4
+        self.upsample = nn.Sequential(
+            nn.ConvTranspose2d(2048, 1024, kernel_size=4, stride=2, padding=1),  # 1/32 -> 1/16
+            nn.BatchNorm2d(1024),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(1024, 512, kernel_size=4, stride=2, padding=1),  # 1/16 -> 1/8
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+
+            nn.ConvTranspose2d(512, inp_dim, kernel_size=4, stride=2, padding=1),  # 1/8 -> 1/4
+            nn.BatchNorm2d(inp_dim),
+            nn.ReLU(inplace=True)
         )
+        # self.pre = nn.Sequential(
+        #     Conv(3, 64, 7, 2, bn=True, relu=True),
+        #     Residual(64, 128),
+        #     Pool(2, 2),
+        #     Residual(128, 128),
+        #     Residual(128, inp_dim)
+        # )
         
         self.hgs = nn.ModuleList( [
         nn.Sequential(
@@ -48,7 +67,9 @@ class PoseNet(nn.Module):
     def forward(self, imgs):
         ## our posenet
         x = imgs.permute(0, 3, 1, 2) #x of size 1,3,inpdim,inpdim
-        x = self.pre(x)
+        #x = self.pre(x)
+        x = self.resnet_features(x)
+        x = self.upsample(x)
         combined_hm_preds = []
         for i in range(self.nstack):
             hg = self.hgs[i](x)
