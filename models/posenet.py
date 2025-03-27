@@ -23,8 +23,6 @@ class PoseNet(nn.Module):
         self.nstack = nstack
 
         resnet = resnet50(pretrained=True)
-        for param in resnet.parameters():
-            param.requires_grad = False
         self.resnet_features = nn.Sequential(*list(resnet.children())[:-2])
         # 上采样模块：将分辨率从 1/32 恢复到 1/4
         self.upsample = nn.Sequential(
