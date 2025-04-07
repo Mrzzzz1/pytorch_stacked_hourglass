@@ -10,14 +10,14 @@ class ChannelAttention(nn.Module):
         self.max_pool = nn.AdaptiveMaxPool2d(1)
         self.fc = nn.Sequential(
             # 全连接层
-            nn.Linear(in_channels, in_channels // ratio, bias=False),
-            nn.ReLU(),
-            nn.Linear(in_channels // ratio, in_channels, bias=False)
+            #nn.Linear(in_channels, in_channels // ratio, bias=False),
+            #nn.ReLU(),
+            #nn.Linear(in_channels // ratio, in_channels, bias=False)
 
             # 利用1x1卷积代替全连接，避免输入必须尺度固定的问题，并减小计算量
-            # nn.Conv2d(in_channels, in_channels // ratio, 1, bias=False),
-            # nn.ReLU(inplace=True),
-            # nn.Conv2d(in_channels // ratio, in_channels, 1, bias=False)
+            nn.Conv2d(in_channels, in_channels // ratio, 1, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(in_channels // ratio, in_channels, 1, bias=False)
         )
         self.sigmoid = nn.Sigmoid()
 
