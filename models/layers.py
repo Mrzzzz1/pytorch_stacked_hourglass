@@ -28,7 +28,7 @@ class Conv(nn.Module):
 
 class SepConv(nn.Module):
     def __init__(self, inp_dim, out_dim, kernel_size=3, stride = 1, bn = False, relu = True):
-        super(Conv, self).__init__()
+        super(SepConv, self).__init__()
         self.inp_dim = inp_dim
         self.deepthwise_conv = nn.Conv2d(inp_dim,
                                          inp_dim,
