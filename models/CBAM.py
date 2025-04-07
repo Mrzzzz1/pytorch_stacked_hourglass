@@ -21,12 +21,12 @@ class ChannelAttention(nn.Module):
         )
         self.sigmoid = nn.Sigmoid()
 
-   def forward(self, x):
-       avg_out = self.fc(self.avg_pool(x))
-       max_out = self.fc(self.max_pool(x))
-       out = avg_out + max_out
-       out = self.sigmoid(out)
-       return out * x
+    def forward(self, x):
+        avg_out = self.fc(self.avg_pool(x))
+        max_out = self.fc(self.max_pool(x))
+        out = avg_out + max_out
+        out = self.sigmoid(out)
+        return out * x
 
 class SpatialAttention(nn.Module):
     """
