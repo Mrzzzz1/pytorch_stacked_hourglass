@@ -1,5 +1,5 @@
 from torch import nn
-
+from models.CBAM import CBAM
 Pool = nn.MaxPool2d
 
 def batchnorm(x):
@@ -25,7 +25,41 @@ class Conv(nn.Module):
         if self.relu is not None:
             x = self.relu(x)
         return x
-    
+
+class SepConv(nn.Module):
+    def __init__(self, inp_dim, out_dim, kernel_size=3, stride = 1, bn = False, relu = True):
+        super(Conv, self).__init__()
+        self.inp_dim = inp_dim
+        self.deepthwise_conv = nn.Conv2d(inp_dim,
+                                         inp_dim,
+                                         kernel_size=kernel_size,
+                                         stride=stride,
+                                         padding=(kernel_size-1)//2,
+                                         bias=True,
+                                         groups=inp_dim)
+        self.pointwise_conv = nn.Conv2d(inp_dim,
+                                        out_dim,
+                                        kernel_size=1,
+                                        stride=1,
+                                        padding=0,
+                                        bias=True,
+                                        groups=1)
+        #self.conv = nn.Conv2d(inp_dim, out_dim, kernel_size, stride, padding=(kernel_size-1)//2, bias=True)
+        self.relu = None
+        self.bn = None
+        if relu:
+            self.relu = nn.ReLU()
+        if bn:
+            self.bn = nn.BatchNorm2d(out_dim)
+    def forward(self, x):
+        assert x.size()[1] == self.inp_dim, "{} {}".format(x.size()[1], self.inp_dim)
+        x = self.deepthwise_conv(x)
+        x = self.pointwise_conv(x)
+        if self.bn is not None:
+            x = self.bn(x)
+        if self.relu is not None:
+            x = self.relu(x)
+        return x
 class Residual(nn.Module):
     def __init__(self, inp_dim, out_dim):
         super(Residual, self).__init__()
@@ -33,7 +67,7 @@ class Residual(nn.Module):
         self.bn1 = nn.BatchNorm2d(inp_dim)
         self.conv1 = Conv(inp_dim, int(out_dim/2), 1, relu=False)
         self.bn2 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv2 = Conv(int(out_dim/2), int(out_dim/2), 3, relu=False)
+        self.conv2 = SepConv(int(out_dim/2), int(out_dim/2), 3, relu=False)
         self.bn3 = nn.BatchNorm2d(int(out_dim/2))
         self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
         self.skip_layer = Conv(inp_dim, out_dim, 1, relu=False)
@@ -72,7 +106,10 @@ class Hourglass(nn.Module):
         if self.n > 1:
             self.low2 = Hourglass(n-1, nf, bn=bn)
         else:
-            self.low2 = Residual(nf, nf)
+            self.low2 = nn.Sequential(
+                Residual(nf, nf),
+                CBAM(nf)
+            )
         self.low3 = Residual(nf, f)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
 

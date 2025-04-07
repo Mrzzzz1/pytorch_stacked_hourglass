@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from models.layers import Conv, Hourglass, Pool, Residual
 from task.loss import HeatmapLoss
+from models.CBAM import CBAM
 
 class UnFlatten(nn.Module):
     def forward(self, input):
@@ -31,6 +32,7 @@ class PoseNet(nn.Module):
         self.hgs = nn.ModuleList( [
         nn.Sequential(
             Hourglass(4, inp_dim, bn, increase),
+            CBAM(inp_dim)
         ) for i in range(nstack)] )
         
         self.features = nn.ModuleList( [

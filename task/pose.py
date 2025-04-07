@@ -83,7 +83,8 @@ def make_network(configs):
     poseNet = PoseNet(**config)
     forward_net = DataParallel(poseNet.cuda())
     config['net'] = Trainer(forward_net, configs['inference']['keys'], calc_loss)
-    
+    total = sum([param.nelement() for param in config['net'].parameters()])
+    print("Number of parameters: %.2fM" % (total / 1e6))
     ## optimizer, experiment setup
     train_cfg['optimizer'] = torch.optim.Adam(filter(lambda p: p.requires_grad,config['net'].parameters()), train_cfg['learning_rate'])
 
