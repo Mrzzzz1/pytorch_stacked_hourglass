@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from models.layers import Conv, Hourglass, Pool, Residual
 from task.loss import HeatmapLoss
+from task.loss import AdaptiveWingLoss
 
 class UnFlatten(nn.Module):
     def forward(self, input):
@@ -43,8 +44,8 @@ class PoseNet(nn.Module):
         self.merge_features = nn.ModuleList( [Merge(inp_dim, inp_dim) for i in range(nstack-1)] )
         self.merge_preds = nn.ModuleList( [Merge(oup_dim, inp_dim) for i in range(nstack-1)] )
         self.nstack = nstack
-        self.heatmapLoss = HeatmapLoss()
-
+        #self.heatmapLoss = HeatmapLoss()
+        self.heatmapLoss = AdaptiveWingLoss()
     def forward(self, imgs):
         ## our posenet
         x = imgs.permute(0, 3, 1, 2) #x of size 1,3,inpdim,inpdim
