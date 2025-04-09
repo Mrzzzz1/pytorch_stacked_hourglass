@@ -67,7 +67,7 @@ class Residual(nn.Module):
         self.bn1 = nn.BatchNorm2d(inp_dim)
         self.conv1 = Conv(inp_dim, int(out_dim/2), 1, relu=False)
         self.bn2 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv2 = SepConv(int(out_dim/2), int(out_dim/2), 3, relu=False)
+        self.conv2 = Conv(int(out_dim/2), int(out_dim/2), 3, relu=False)
         self.bn3 = nn.BatchNorm2d(int(out_dim/2))
         self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
         self.skip_layer = Conv(inp_dim, out_dim, 1, relu=False)
