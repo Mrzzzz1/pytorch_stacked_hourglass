@@ -74,18 +74,18 @@ class Hourglass(nn.Module):
         else:
             self.low2 = Residual(nf, nf)
         self.low3 = Residual(nf, f)
-        ##self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
-        self.up2 = nn.Sequential(
-            nn.ConvTranspose2d(
-                in_channels=f,
-                out_channels=f,
-                kernel_size=4,
-                stride=2,
-                padding=1
-            ),
-            nn.BatchNorm2d(f),
-            nn.ReLU(inplace=True)
-        )
+        self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
+        # self.up2 = nn.Sequential(
+        #     nn.ConvTranspose2d(
+        #         in_channels=f,
+        #         out_channels=f,
+        #         kernel_size=4,
+        #         stride=2,
+        #         padding=1
+        #     ),
+        #     nn.BatchNorm2d(f),
+        #     nn.ReLU(inplace=True)
+        # )
     def forward(self, x):
         up1  = self.up1(x)
         pool1 = self.pool1(x)
