@@ -108,7 +108,7 @@ class Hourglass(nn.Module):
         else:
             self.low2 = nn.Sequential(
                 Residual(nf, nf),
-                CBAM(nf)
+                ## CBAM(nf)
             )
         self.low3 = Residual(nf, f)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
