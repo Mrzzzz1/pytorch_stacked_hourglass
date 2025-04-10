@@ -1,5 +1,5 @@
 from torch import nn
-
+import torch
 Pool = nn.MaxPool2d
 
 def batchnorm(x):
@@ -66,14 +66,15 @@ class Hourglass(nn.Module):
         self.up1 = Residual(f, f)
         # Lower branch
         self.pool1 = Pool(2, 2)
-        self.low1 = Residual(f, nf)
+        ## self.low1 = Residual(f, nf)
+        self.low1 = MSRB(n_feats=f)
         self.n = n
         # Recursive hourglass
         if self.n > 1:
             self.low2 = Hourglass(n-1, nf, bn=bn)
         else:
-            self.low2 = Residual(nf, nf)
-        self.low3 = Residual(nf, f)
+            self.low2 = MSRB(n_feats=f)
+        self.low3 = MSRB(n_feats=f)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
 
     def forward(self, x):
@@ -84,3 +85,35 @@ class Hourglass(nn.Module):
         low3 = self.low3(low2)
         up2  = self.up2(low3)
         return up1 + up2
+
+def default_conv(in_channels, out_channels, kernel_size, bias=True):
+    return nn.Conv2d(
+        in_channels, out_channels, kernel_size,
+        padding=(kernel_size//2), bias=bias)
+
+
+class MSRB(nn.Module):
+    def __init__(self, conv=default_conv, n_feats=64):
+        super(MSRB, self).__init__()
+
+        kernel_size_1 = 3
+        kernel_size_2 = 5
+
+        self.conv_3_1 = conv(n_feats, n_feats, kernel_size_1)
+        self.conv_3_2 = conv(n_feats * 2, n_feats * 2, kernel_size_1)
+        self.conv_5_1 = conv(n_feats, n_feats, kernel_size_2)
+        self.conv_5_2 = conv(n_feats * 2, n_feats * 2, kernel_size_2)
+        self.confusion = nn.Conv2d(n_feats * 4, n_feats, 1, padding=0, stride=1)
+        self.relu = nn.ReLU(inplace=True)
+
+    def forward(self, x):
+        input_1 = x
+        output_3_1 = self.relu(self.conv_3_1(input_1))
+        output_5_1 = self.relu(self.conv_5_1(input_1))
+        input_2 = torch.cat([output_3_1, output_5_1], 1)
+        output_3_2 = self.relu(self.conv_3_2(input_2))
+        output_5_2 = self.relu(self.conv_5_2(input_2))
+        input_3 = torch.cat([output_3_2, output_5_2], 1)
+        output = self.confusion(input_3)
+        output += x
+        return output
