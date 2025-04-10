@@ -67,14 +67,17 @@ class Hourglass(nn.Module):
         # Lower branch
         self.pool1 = Pool(2, 2)
         ## self.low1 = Residual(f, nf)
-        self.low1 = MSRB(n_feats=f)
+        if n == 4:
+            self.low1 = MSRB(n_feats=f)
+        else:
+            self.low1 = Residual(f, nf)
         self.n = n
         # Recursive hourglass
         if self.n > 1:
             self.low2 = Hourglass(n-1, nf, bn=bn)
         else:
-            self.low2 = MSRB(n_feats=f)
-        self.low3 = MSRB(n_feats=f)
+            self.low2 = Residual(f, nf)
+        self.low3 = Residual(f, nf)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
 
     def forward(self, x):
