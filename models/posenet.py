@@ -32,7 +32,6 @@ class PoseNet(nn.Module):
         self.hgs = nn.ModuleList( [
         nn.Sequential(
             Hourglass(4, inp_dim, bn, increase),
-            CBAM(inp_dim)
         ) for i in range(nstack)] )
         
         self.features = nn.ModuleList( [

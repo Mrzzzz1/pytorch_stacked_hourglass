@@ -97,7 +97,10 @@ class Hourglass(nn.Module):
     def __init__(self, n, f, bn=None, increase=0):
         super(Hourglass, self).__init__()
         nf = f + increase
-        self.up1 = Residual(f, f)
+        self.up1 = nn.Sequential(
+                Residual(nf, nf),
+                CBAM(nf)
+            )
         # Lower branch
         self.pool1 = Pool(2, 2)
         self.low1 = Residual(f, nf)
@@ -107,8 +110,7 @@ class Hourglass(nn.Module):
             self.low2 = Hourglass(n-1, nf, bn=bn)
         else:
             self.low2 = nn.Sequential(
-                Residual(nf, nf),
-                CBAM(nf)
+                Residual(nf, nf)
             )
         self.low3 = Residual(nf, f)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
