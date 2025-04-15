@@ -66,17 +66,17 @@ class Hourglass(nn.Module):
     def __init__(self, n, f, bn=None, increase=0):
         super(Hourglass, self).__init__()
         nf = f + increase
-        self.up1 = Residual(f, f)
+        self.up1 = ShuffleNetResidual(f, f)
         # Lower branch
         self.pool1 = Pool(2, 2)
-        self.low1 = Residual(f, nf)
+        self.low1 = ShuffleNetResidual(f, nf)
         self.n = n
         # Recursive hourglass
         if self.n > 1:
             self.low2 = Hourglass(n-1, nf, bn=bn)
         else:
-            self.low2 = Residual(nf, nf)
-        self.low3 = Residual(nf, f)
+            self.low2 = ShuffleNetResidual(nf, nf)
+        self.low3 = ShuffleNetResidual(nf, f)
         self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
 
     def forward(self, x):
