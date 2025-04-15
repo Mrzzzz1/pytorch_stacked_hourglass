@@ -1,7 +1,7 @@
 from torch import nn
-from light_weight_residual import DSResidual
-from light_weight_residual import InvertedResidual
-from light_weight_residual import ShuffleNetResidual
+from models.light_weight_residual import DSResidual
+from models.light_weight_residual import InvertedResidual
+from models.light_weight_residual import ShuffleNetResidual
 
 Pool = nn.MaxPool2d
 
