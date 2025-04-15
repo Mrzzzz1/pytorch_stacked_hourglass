@@ -1,5 +1,5 @@
 from torch import nn
-from layers import Conv
+from models.layers import Conv
 class ConvBNReLU(nn.Sequential):#depthwise conv+BN+relu6，用于构建InvertedResidual。
     def __init__(self, in_channel, out_channel, kernel_size=3, stride=1, groups=1):
         #参数：输入的tensor的通道数，输出通道数，卷积核大小，卷积步距，输入与输出对应的块数（改为输入的层数就是depth wise conv了，详见https://blog.csdn.net/weixin_43572595/article/details/110563397）
