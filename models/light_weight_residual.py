@@ -1,5 +1,28 @@
 from torch import nn
-from layers import Conv
+
+
+class Conv(nn.Module):
+    def __init__(self, inp_dim, out_dim, kernel_size=3, stride=1, bn=False, relu=True):
+        super(Conv, self).__init__()
+        self.inp_dim = inp_dim
+        self.conv = nn.Conv2d(inp_dim, out_dim, kernel_size, stride, padding=(kernel_size - 1) // 2, bias=True)
+        self.relu = None
+        self.bn = None
+        if relu:
+            self.relu = nn.ReLU()
+        if bn:
+            self.bn = nn.BatchNorm2d(out_dim)
+
+    def forward(self, x):
+        assert x.size()[1] == self.inp_dim, "{} {}".format(x.size()[1], self.inp_dim)
+        x = self.conv(x)
+        if self.bn is not None:
+            x = self.bn(x)
+        if self.relu is not None:
+            x = self.relu(x)
+        return x
+
+
 class ConvBNReLU(nn.Sequential):#depthwise conv+BN+relu6，用于构建InvertedResidual。
     def __init__(self, in_channel, out_channel, kernel_size=3, stride=1, groups=1):
         #参数：输入的tensor的通道数，输出通道数，卷积核大小，卷积步距，输入与输出对应的块数（改为输入的层数就是depth wise conv了，详见https://blog.csdn.net/weixin_43572595/article/details/110563397）
