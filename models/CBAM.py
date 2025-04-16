@@ -4,7 +4,7 @@ class ChannelAttention(nn.Module):
     """
     CBAM混合注意力机制的通道注意力
     """
-    def __init__(self, in_channels, ratio=8):
+    def __init__(self, in_channels, ratio=16):
         super(ChannelAttention, self).__init__()
         self.avg_pool = nn.AdaptiveAvgPool2d(1)
         self.max_pool = nn.AdaptiveMaxPool2d(1)

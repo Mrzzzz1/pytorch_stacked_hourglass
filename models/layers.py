@@ -1,5 +1,7 @@
 from torch import nn
 from models.CBAM import CBAM
+from models.CBAM import ChannelAttention
+from models.CBAM import SpatialAttention
 Pool = nn.MaxPool2d
 
 def batchnorm(x):
@@ -67,10 +69,11 @@ class Residual(nn.Module):
         self.bn1 = nn.BatchNorm2d(inp_dim)
         self.conv1 = Conv(inp_dim, int(out_dim/2), 1, relu=False)
         self.bn2 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv2 = SepConv(int(out_dim/2), int(out_dim/2), 3, relu=False)
-        self.bn3 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
+        self.conv2 = SepConv(int(out_dim/2), out_dim, 3, relu=False)
+        # self.bn3 = nn.BatchNorm2d(int(out_dim/2))
+        # self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
         self.skip_layer = Conv(inp_dim, out_dim, 1, relu=False)
+        self.attention = ChannelAttention(out_dim)
         if inp_dim == out_dim:
             self.need_skip = False
         else:
@@ -87,19 +90,20 @@ class Residual(nn.Module):
         out = self.bn2(out)
         out = self.relu(out)
         out = self.conv2(out)
-        out = self.bn3(out)
-        out = self.relu(out)
-        out = self.conv3(out)
+        # out = self.bn3(out)
+        # out = self.relu(out)
+        # out = self.conv3(out)
         out += residual
+        out = self.attention(out)
         return out 
 
 class Hourglass(nn.Module):
     def __init__(self, n, f, bn=None, increase=0):
         super(Hourglass, self).__init__()
         nf = f + increase
+        self.attention = SpatialAttention(nf)
         self.up1 = nn.Sequential(
                 Residual(nf, nf),
-                CBAM(nf)
             )
         # Lower branch
         self.pool1 = Pool(2, 2)
@@ -133,4 +137,4 @@ class Hourglass(nn.Module):
         low2 = self.low2(low1)
         low3 = self.low3(low2)
         up2  = self.up2(low3)
-        return up1 + up2
+        return self.attention(up1 + up2)
