@@ -69,9 +69,9 @@ class Residual(nn.Module):
         self.bn1 = nn.BatchNorm2d(inp_dim)
         self.conv1 = Conv(inp_dim, int(out_dim/2), 1, relu=False)
         self.bn2 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv2 = SepConv(int(out_dim/2), out_dim, 3, relu=False)
-        # self.bn3 = nn.BatchNorm2d(int(out_dim/2))
-        # self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
+        self.conv2 = Conv(int(out_dim/2), int(out_dim/2), 3, relu=False)
+        self.bn3 = nn.BatchNorm2d(int(out_dim/2))
+        self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
         self.skip_layer = Conv(inp_dim, out_dim, 1, relu=False)
         self.attention = ChannelAttention(out_dim)
         if inp_dim == out_dim:
@@ -90,9 +90,9 @@ class Residual(nn.Module):
         out = self.bn2(out)
         out = self.relu(out)
         out = self.conv2(out)
-        # out = self.bn3(out)
-        # out = self.relu(out)
-        # out = self.conv3(out)
+        out = self.bn3(out)
+        out = self.relu(out)
+        out = self.conv3(out)
         out += residual
         out = self.attention(out)
         return out 
@@ -117,19 +117,19 @@ class Hourglass(nn.Module):
                 Residual(nf, nf)
             )
         self.low3 = Residual(nf, f)
+        self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
         ##self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
-        ##self.up2 = nn.Upsample(scale_factor=2, mode='nearest')
-        self.up2 = nn.Sequential(
-            nn.ConvTranspose2d(
-                in_channels=f,
-                out_channels=f,
-                kernel_size=4,
-                stride=2,
-                padding=1
-            ),
-            nn.BatchNorm2d(f),
-            nn.ReLU(inplace=True)
-        )
+        # self.up2 = nn.Sequential(
+        #     nn.ConvTranspose2d(
+        #         in_channels=f,
+        #         out_channels=f,
+        #         kernel_size=4,
+        #         stride=2,
+        #         padding=1
+        #     ),
+        #     nn.BatchNorm2d(f),
+        #     nn.ReLU(inplace=True)
+        # )
     def forward(self, x):
         up1  = self.up1(x)
         pool1 = self.pool1(x)
