@@ -101,7 +101,7 @@ class Hourglass(nn.Module):
     def __init__(self, n, f, bn=None, increase=0):
         super(Hourglass, self).__init__()
         nf = f + increase
-        self.attention = SpatialAttention(nf)
+        self.attention = SpatialAttention()
         self.up1 = nn.Sequential(
                 Residual(nf, nf),
             )
