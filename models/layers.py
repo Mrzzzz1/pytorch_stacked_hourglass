@@ -109,8 +109,8 @@ class Hourglass(nn.Module):
                 Residual(nf, nf),
             )
         # Lower branch
-        ##self.pool1 = Pool(2, 2)
-        self.low1 = Residual(f, nf, true)
+        self.pool1 = Pool(2, 2)
+        self.low1 = Residual(f, nf)
         self.n = n
         # Recursive hourglass
         if self.n > 1:
@@ -135,8 +135,8 @@ class Hourglass(nn.Module):
         # )
     def forward(self, x):
         up1  = self.up1(x)
-        ##pool1 = self.pool1(x)
-        low1 = self.low1(x)
+        pool1 = self.pool1(x)
+        low1 = self.low1(pool1)
         low2 = self.low2(low1)
         low3 = self.low3(low2)
         up2  = self.up2(low3)
