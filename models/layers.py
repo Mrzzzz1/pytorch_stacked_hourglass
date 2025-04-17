@@ -63,18 +63,21 @@ class SepConv(nn.Module):
             x = self.relu(x)
         return x
 class Residual(nn.Module):
-    def __init__(self, inp_dim, out_dim):
+    def __init__(self, inp_dim, out_dim, down=false):
         super(Residual, self).__init__()
         self.relu = nn.ReLU()
+        stride = 1
+        if down:
+            stride = 2
         self.bn1 = nn.BatchNorm2d(inp_dim)
         self.conv1 = Conv(inp_dim, int(out_dim/2), 1, relu=False)
         self.bn2 = nn.BatchNorm2d(int(out_dim/2))
-        self.conv2 = SepConv(int(out_dim/2), out_dim, 3, relu=False)
+        self.conv2 = SepConv(int(out_dim/2), out_dim, 3, stride=stride,relu=False)
         # self.bn3 = nn.BatchNorm2d(int(out_dim/2))
         # self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
-        self.skip_layer = Conv(inp_dim, out_dim, 1, relu=False)
+        self.skip_layer = Conv(inp_dim, out_dim, 1, stride=stride,relu=False)
         self.attention = ChannelAttention(out_dim)
-        if inp_dim == out_dim:
+        if inp_dim == out_dim and down == false:
             self.need_skip = False
         else:
             self.need_skip = True
@@ -106,8 +109,8 @@ class Hourglass(nn.Module):
                 Residual(nf, nf),
             )
         # Lower branch
-        self.pool1 = Pool(2, 2)
-        self.low1 = Residual(f, nf)
+        ##self.pool1 = Pool(2, 2)
+        self.low1 = Residual(f, nf, true)
         self.n = n
         # Recursive hourglass
         if self.n > 1:
@@ -132,8 +135,8 @@ class Hourglass(nn.Module):
         )
     def forward(self, x):
         up1  = self.up1(x)
-        pool1 = self.pool1(x)
-        low1 = self.low1(pool1)
+        ##pool1 = self.pool1(x)
+        low1 = self.low1(x)
         low2 = self.low2(low1)
         low3 = self.low3(low2)
         up2  = self.up2(low3)
