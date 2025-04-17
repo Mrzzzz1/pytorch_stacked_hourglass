@@ -77,7 +77,7 @@ class Residual(nn.Module):
         # self.conv3 = Conv(int(out_dim/2), out_dim, 1, relu=False)
         self.skip_layer = Conv(inp_dim, out_dim, 1, stride=stride,relu=False)
         self.attention = ChannelAttention(out_dim)
-        if inp_dim == out_dim and down == false:
+        if inp_dim == out_dim and down == False:
             self.need_skip = False
         else:
             self.need_skip = True
