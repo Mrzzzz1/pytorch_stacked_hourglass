@@ -63,7 +63,7 @@ class SepConv(nn.Module):
             x = self.relu(x)
         return x
 class Residual(nn.Module):
-    def __init__(self, inp_dim, out_dim, down=false):
+    def __init__(self, inp_dim, out_dim, down=False):
         super(Residual, self).__init__()
         self.relu = nn.ReLU()
         stride = 1
